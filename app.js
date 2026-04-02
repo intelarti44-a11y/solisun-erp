@@ -1,4 +1,4 @@
-const API_URL = 'http://localhost:3000/api';
+const API_URL = '/api'; // URL relative — fonctionne en local ET sur Railway
 
 function formatCurrency(val) {
     if (!val && val !== 0) return '-';
