@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoliSun ERP - Gestion des Clients</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --secondary: #facc15;
+            --dark: #0f172a;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background-color: var(--dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .logo-area {
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo-icon {
+            color: var(--secondary);
+            font-size: 24px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-menu {
+            padding: 20px 0;
+            flex-grow: 1;
+        }
+
+        .nav-item {
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: white;
+            border-left: 4px solid var(--primary);
+        }
+
+        .nav-item i {
+            width: 20px;
+            text-align: center;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #fff;
+            height: 70px;
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--gray-200);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .header-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .content-area {
+            padding: 30px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        /* Dashboard Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border: 1px solid var(--gray-200);
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.blue { background: #eff6ff; color: var(--primary); }
+        .stat-icon.green { background: #ecfdf5; color: var(--success); }
+        .stat-icon.yellow { background: #fffbeb; color: var(--warning); }
+
+        .stat-details h3 {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .stat-details p {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Forms Layout */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--gray-200);
+            background-color: #f8fafc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .card-body {
+            padding: 24px;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px dashed var(--gray-200);
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .form-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--gray-700);
+        }
+
+        input, select, textarea {
+            padding: 10px 14px;
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+            background-color: #fff;
+            color: var(--text-main);
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-outline {
+            background-color: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--gray-100);
+        }
+
+        /* Action bar for forms */
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--gray-200);
+        }
+
+        /* Status badges */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-warning { background-color: #fef3c7; color: #d97706; }
+        .badge-success { background-color: #d1fae5; color: #059669; }
+        .badge-blue { background-color: #dbeafe; color: #2563eb; }
+
+        /* Tables for clients list */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            text-align: left;
+            padding: 14px 20px;
+            border-bottom: 1px solid var(--gray-200);
+            font-size: 14px;
+        }
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        tr:hover {
+            background-color: #f8fafc;
+        }
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+        .icon-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 16px;
+            transition: color 0.2s;
+        }
+        .icon-btn:hover { color: var(--primary); }
+
+        /* Hide logic for SPA effect */
+        .view-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .view-section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo-area">
+            <i class="fa-solid fa-solar-panel logo-icon"></i>
+            <div class="logo-text">SoliSun ERP</div>
+        </div>
+        <nav class="nav-menu">
+            <div class="nav-item active" onclick="openDashboard()">
+                <i class="fa-solid fa-chart-pie"></i>
+                Tableau de bord
+            </div>
+            <div class="nav-item" onclick="switchView('clients-list')">
+                <i class="fa-solid fa-users"></i>
+                Liste des clients
+            </div>
+            <div class="nav-item" onclick="switchView('clients-signed')">
+                <i class="fa-solid fa-file-signature"></i>
+                Clients signés
+            </div>
+            <div class="nav-item" onclick="openFacturation()">
+                <i class="fa-solid fa-money-check-dollar"></i>
+                Facturation & Acomptes
+            </div>
+            <div class="nav-item" onclick="openNewClient()">
+                <i class="fa-solid fa-user-plus"></i>
+                Nouveau dossier
+            </div>
+            <div class="nav-item" onclick="openSettings()">
+                <i class="fa-solid fa-gear"></i>
+                Paramètres
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="header">
+            <div class="header-title" id="page-title">Tableau de bord</div>
+            <div class="user-profile">
+                <span style="font-size: 14px; font-weight: 500;">Bonjour, Greg</span>
+                <div class="avatar">G</div>
+                <a href="/logout" style="margin-left:10px; font-size:13px; color: var(--text-muted); text-decoration:none; display:flex; align-items:center; gap:5px; padding:6px 12px; border:1px solid var(--gray-200); border-radius:6px; transition:all 0.2s;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background=''"><i class='fa-solid fa-right-from-bracket'></i> Déconnexion</a>
+            </div>
+        </header>
+
+        <div class="content-area">
+
+            <!-- DASHBOARD VIEW -->
+            <div id="view-dashboard" class="view-section active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon blue">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Total Clients</h3>
+                            <p id="stat-total-clients">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yellow">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Chantiers en cours</h3>
+                            <p id="stat-chantiers-cours">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green">
+                            <i class="fa-solid fa-check-double"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Installations 6 kWc</h3>
+                            <p id="stat-installs-6k">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background:#f3e8ff; color:#9333ea;">
+                            <i class="fa-solid fa-euro-sign"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>CA Signé</h3>
+                            <p id="stat-ca-signe">0 €</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Derniers rendez-vous ajoutés</h2>
+                        <button class="btn btn-primary" onclick="openNewClient()"><i class="fa-solid fa-plus"></i> Nouveau</button>
+                    </div>
+                    <div class="card-body" style="padding: 0;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Date RDV</th>
+                                    <th>Installation</th>
+                                    <th>Statut commercial</th>
+                                    <th>Statut Chantier</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Chargement dynamique via app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NEW CLIENT FORM VIEW -->
+            <div id="view-new-client" class="view-section">
+                <div class="card">
+                    <div class="card-header">
+                        <h2>Création d'un dossier client complet</h2>
+                    </div>
+                    <div class="card-body">
+                        
+                        <form id="clientForm" onsubmit="event.preventDefault(); alert('Dossier enregistré avec succès !'); switchView('dashboard');">
+                            
+                            <!-- 1. Fiche client -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fa-solid fa-user"></i> 1. Fiche Client</div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Nom & Prénom *</label>
+                                        <input type="text" name="nom" placeholder="Ex: Dupont Jean" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Type de client</label>
+                                        <select name="type_client">
+                                            <option value="Particulier">Particulier</option>
+                                            <option value="Professionnel">Professionnel</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Téléphone</label>
+                                        <input type="tel" name="telephone" placeholder="06 00 00 00 00">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Email</label>
+                                        <input type="email" name="email" placeholder="client@email.com">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Adresse complète</label>
+                                        <input type="text" name="adresse" placeholder="Numéro et rue">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Code Postal</label>
+                                        <input type="text" name="code_postal" placeholder="Ex: 75000">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Ville</label>
+                                        <input type="text" name="ville" placeholder="Ex: Paris">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2. Suivi commercial -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fa-solid fa-handshake"></i> 2. Suivi Commercial</div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Date de prise de contact</label>
+                                        <input type="date" name="date_contact">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Date de rendez-vous</label>
+                                        <input type="date" name="date_rdv">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Commercial en charge</label>
+                                        <select name="commercial" id="commercialSelect">
+                                            <option value="">-- Choisir --</option>
+                                            <!-- Load via JS -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Statut</label>
+                                        <select name="statut_commercial">
+                                            <option value="À contacter">À contacter</option>
+                                            <option value="RDV fixé">RDV fixé</option>
+                                            <option value="Devis envoyé">Devis envoyé</option>
+                                            <option value="Signé">Signé</option>
+                                            <option value="Refusé">Refusé</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Projet d'installation -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fa-solid fa-solar-panel"></i> 3. Projet d'installation</div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Type d'installation</label>
+                                        <select name="type_installation" id="installationSelect">
+                                            <option value="">Sélectionner...</option>
+                                            <!-- Dynamically loaded -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Présence de batterie</label>
+                                        <select name="batterie">
+                                            <option value="Non">Non</option>
+                                            <option value="Oui">Oui</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Type de toiture</label>
+                                        <input type="text" name="type_toiture" placeholder="Ex: Tuiles mécaniques, Ardoises...">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label>Commentaires techniques</label>
+                                        <textarea name="commentaires" rows="3" placeholder="Accès difficile, orientation sud-est..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 4. Devis & Facturation -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fa-solid fa-file-invoice-dollar"></i> 4. Partie Devis</div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Prix de l'installation HT (€)</label>
+                                        <input type="number" step="0.01" name="prix_installation_ht" placeholder="Ex: 8500">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Taux de TVA</label>
+                                        <select name="taux_tva">
+                                            <option value="">À définir</option>
+                                            <option value="5.5">5.5 %</option>
+                                            <option value="10">10 %</option>
+                                            <option value="20">20 %</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Montant du devis TTC (€)</label>
+                                        <input type="number" step="0.01" name="montant_devis" placeholder="Ex: 8967.5">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Date d'envoi du devis</label>
+                                        <input type="date" name="date_envoi_devis">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Date de signature</label>
+                                        <input type="date" name="date_signature">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Mode de paiement</label>
+                                        <select name="mode_paiement">
+                                            <option value="Virement">Virement</option>
+                                            <option value="Chèque">Chèque</option>
+                                            <option value="Financement / Crédit">Financement / Crédit</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 4.b Suivi des encaissements -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fa-solid fa-piggy-bank"></i> 4.b. Suivi des Encaissements</div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>1er Acompte - Montant (€)</label>
+                                        <input type="number" step="0.01" name="acompte_1_montant">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>1er Acompte - Date</label>
+                                        <input type="date" name="acompte_1_date">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>2ème Acompte - Montant (€)</label>
+                                        <input type="number" step="0.01" name="acompte_2_montant">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>2ème Acompte - Date</label>
+                                        <input type="date" name="acompte_2_date">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Solde Final - Montant (€)</label>
+                                        <input type="number" step="0.01" name="solde_montant">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Solde Final - Date</label>
+                                        <input type="date" name="solde_date">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 5. Chantier & Administratif -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fa-solid fa-person-digging"></i> 5. Chantier & Administratif</div>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Statut chantier</label>
+                                        <select name="statut_chantier">
+                                            <option value="En attente">En attente</option>
+                                            <option value="En cours">En cours</option>
+                                            <option value="Terminé">Terminé</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Date de début prévue</label>
+                                        <input type="date" name="date_debut">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Numéro de dossier Enedis</label>
+                                        <input type="text" name="enedis" placeholder="N° PRM / CRAE">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Suivi Consuel / Prime EDF</label>
+                                        <select name="consuel">
+                                            <option value="Non démarré">Non démarré</option>
+                                            <option value="Dossier envoyé">Dossier envoyé</option>
+                                            <option value="Validé">Validé</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 6. Observations Générales -->
+                            <div class="form-section">
+                                <div class="form-section-title"><i class="fa-solid fa-comment-dots"></i> 6. Observations</div>
+                                <div class="form-grid">
+                                    <div class="form-group full-width">
+                                        <label>Notes & Commentaires supplémentaires</label>
+                                        <textarea name="observations" rows="4" placeholder="Résumé de l'appel, observations métier..."></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-outline" onclick="openDashboard()">Annuler</button>
+                                <button type="submit" class="btn btn-success"><i class="fa-solid fa-floppy-disk"></i> Enregistrer le dossier</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- LIST VIEW -->
+            <div id="view-clients-list" class="view-section">
+                <div class="card">
+                     <div class="card-header">
+                        <h2>Tous les clients</h2>
+                        <div>
+                            <input type="text" placeholder="Rechercher..." style="margin-right: 15px;">
+                            <button class="btn btn-primary" onclick="openNewClient()"><i class="fa-solid fa-plus"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 0; min-height: 300px;">
+                        <table id="fullClientsTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable('nom')" style="cursor:pointer">Client / Lieu <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('telephone')" style="cursor:pointer">Téléphone <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('type_installation')" style="cursor:pointer">Projet <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('statut_commercial')" style="cursor:pointer">Statut Commercial <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('montant_devis')" style="cursor:pointer">Montant Devis <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('statut_chantier')" style="cursor:pointer">Statut Chantier <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="fullClientsTableBody">
+                                <!-- Data will be loaded via API -->
+                            </tbody>
+                        </table>
+                        <div id="loadingClients" style="padding: 40px; text-align: center; color: var(--gray-500);">
+                            <i class="fa-solid fa-spinner fa-spin" style="font-size: 30px;"></i>
+                            <p style="margin-top: 15px;">Chargement des données...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIGNED CLIENTS VIEW -->
+            <div id="view-clients-signed" class="view-section">
+                <div class="card">
+                     <div class="card-header">
+                        <h2>Clients Signés</h2>
+                        <div>
+                            <input type="text" placeholder="Rechercher..." style="margin-right: 15px;">
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 0; min-height: 300px;">
+                        <table id="signedClientsTable">
+                            <thead>
+                                <tr>
+                                    <th onclick="sortTable('nom')" style="cursor:pointer">Client / Lieu <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('telephone')" style="cursor:pointer">Téléphone <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('type_installation')" style="cursor:pointer">Projet <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('montant_devis')" style="cursor:pointer">Montant Devis <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('statut_chantier')" style="cursor:pointer">Statut Chantier <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="signedClientsTableBody">
+                                <!-- Data will be loaded via API -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS VIEW -->
+            <div id="view-settings" class="view-section">
+                <div class="card" style="margin-bottom: 30px;">
+                     <div class="card-header">
+                        <h2>Base des Commerciaux</h2>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                            <input type="text" id="addCommercialName" placeholder="Nouveau commercial..." style="width: 300px;">
+                            <button class="btn btn-success" onclick="addCommercial()"><i class="fa-solid fa-plus"></i> Ajouter</button>
+                        </div>
+                        <table style="max-width: 500px;">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th style="width: 80px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="settingsCommerciauxList">
+                                <!-- Data will be populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card">
+                     <div class="card-header">
+                        <h2>Types d'Installations</h2>
+                    </div>
+                    <div class="card-body">
+                        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+                            <input type="text" id="addInstallationName" placeholder="Nouveau type (ex: 9 kWc)..." style="width: 300px;">
+                            <button class="btn btn-success" onclick="addInstallation()"><i class="fa-solid fa-plus"></i> Ajouter</button>
+                        </div>
+                        <table style="max-width: 500px;">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th style="width: 80px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="settingsInstallationsList">
+                                <!-- Data will be populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FACTURATION VIEW -->
+            <div id="view-facturation" class="view-section">
+                <div class="card">
+                     <div class="card-header">
+                        <h2>Suivi des Encaissements (Devis Signés)</h2>
+                    </div>
+                    <div class="card-body" style="padding: 0; min-height: 300px; overflow-x: auto;">
+                        <table id="facturationTable">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Signature</th>
+                                    <th>Montant TTC</th>
+                                    <th>1er Acompte</th>
+                                    <th>2ème Acompte</th>
+                                    <th>Solde</th>
+                                    <th>Reste à Payer</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="facturationTableBody">
+                                <!-- Data will be loaded via API -->
+                            </tbody>
+                            <tfoot id="facturationTableFoot" style="font-weight: bold; background-color: #f8fafc;">
+                                <!-- Totals -->
+                            </tfoot>
+                        </table>
+                        <div id="loadingFacturation" style="padding: 40px; text-align: center; color: var(--gray-500);">
+                            <i class="fa-solid fa-spinner fa-spin" style="font-size: 30px;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
