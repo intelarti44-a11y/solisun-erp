@@ -109,13 +109,28 @@ function formatPhone(raw) {
     return digits.replace(/(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/, '$1 $2 $3 $4 $5');
 }
 
-// Database setup
-const dbPath = path.join(__dirname, 'database.sqlite');
+// Database setup — Volume persistant Railway
+const fs = require('fs');
+const DATA_DIR  = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
+const dbPath    = path.join(DATA_DIR, 'database.sqlite');
+const seedPath  = path.join(__dirname, 'database.sqlite'); // fichier initial (GitHub)
+
+// Créer le dossier data s'il n'existe pas (mode local)
+if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+}
+
+// Si la base persistante n'existe pas encore → copier les données initiales
+if (!fs.existsSync(dbPath) && fs.existsSync(seedPath)) {
+    fs.copyFileSync(seedPath, dbPath);
+    console.log('✅ Base de données initiale copiée dans le volume persistant.');
+}
+
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) {
         console.error("Erreur de connexion à la base de données :", err.message);
     } else {
-        console.log("Connecté à la base de données SQLite.");
+        console.log(`Connecté à la base de données SQLite : ${dbPath}`);
         initializeDatabase(db);
     }
 });
