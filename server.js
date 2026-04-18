@@ -5,7 +5,7 @@ const path = require('path');
 const session = require('express-session');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 
 // Identifiants (modifiables via variables d'environnement sur Railway)
 const LOGIN_USER     = process.env.LOGIN_USER     || 'admin';
@@ -83,11 +83,22 @@ app.get('/logout', (req, res) => {
 
 // ─── Fichiers statiques protégés ────────────────────────────────────────────
 app.get('/', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    try {
+        const html = fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8');
+        res.send(html);
+    } catch (err) {
+        res.status(500).send("Erreur lors de la lecture de index.html : " + err.message);
+    }
 });
 
 app.get('/app.js', requireAuth, (req, res) => {
-    res.sendFile(path.join(__dirname, 'app.js'));
+    try {
+        const js = fs.readFileSync(path.join(__dirname, 'app.js'), 'utf8');
+        res.setHeader('Content-Type', 'application/javascript');
+        res.send(js);
+    } catch (err) {
+        res.status(500).send("Erreur lors de la lecture de app.js : " + err.message);
+    }
 });
 
 // ─── Assets publics (appelés depuis login.html, CDN ne nécessite pas de protection) ──
@@ -177,6 +188,9 @@ function initializeDatabase(database) {
             -- Autres infos
             type_client TEXT,
             observations TEXT,
+            dp_valide INTEGER DEFAULT 0,
+            commande_passee INTEGER DEFAULT 0,
+            pose_programmee INTEGER DEFAULT 0,
             
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -195,6 +209,9 @@ function initializeDatabase(database) {
             db.run(`ALTER TABLE clients ADD COLUMN acompte_2_date TEXT`, () => {});
             db.run(`ALTER TABLE clients ADD COLUMN solde_montant REAL`, () => {});
             db.run(`ALTER TABLE clients ADD COLUMN solde_date TEXT`, () => {});
+            db.run(`ALTER TABLE clients ADD COLUMN dp_valide INTEGER DEFAULT 0`, () => {});
+            db.run(`ALTER TABLE clients ADD COLUMN commande_passee INTEGER DEFAULT 0`, () => {});
+            db.run(`ALTER TABLE clients ADD COLUMN pose_programmee INTEGER DEFAULT 0`, () => {});
             
             db.run(`
                 CREATE TABLE IF NOT EXISTS commerciaux (
@@ -254,8 +271,9 @@ app.post('/api/clients', requireAuth, (req, res) => {
             prix_installation_ht, taux_tva, montant_devis, date_envoi_devis, date_signature, mode_paiement,
             statut_chantier, date_debut, enedis, consuel,
             type_client, observations,
-            acompte_1_montant, acompte_1_date, acompte_2_montant, acompte_2_date, solde_montant, solde_date
-        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            acompte_1_montant, acompte_1_date, acompte_2_montant, acompte_2_date, solde_montant, solde_date,
+            dp_valide, commande_passee, pose_programmee
+        ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `;
     
     const params = [
@@ -265,7 +283,8 @@ app.post('/api/clients', requireAuth, (req, res) => {
         data.prix_installation_ht, data.taux_tva, data.montant_devis, data.date_envoi_devis, data.date_signature, data.mode_paiement,
         data.statut_chantier, data.date_debut, data.enedis, data.consuel,
         data.type_client, data.observations,
-        data.acompte_1_montant, data.acompte_1_date, data.acompte_2_montant, data.acompte_2_date, data.solde_montant, data.solde_date
+        data.acompte_1_montant, data.acompte_1_date, data.acompte_2_montant, data.acompte_2_date, data.solde_montant, data.solde_date,
+        data.dp_valide || 0, data.commande_passee || 0, data.pose_programmee || 0
     ];
     
     db.run(sql, params, function(err) {
@@ -289,7 +308,8 @@ app.put('/api/clients/:id', requireAuth, (req, res) => {
             prix_installation_ht = ?, taux_tva = ?, montant_devis = ?, date_envoi_devis = ?, date_signature = ?, mode_paiement = ?,
             statut_chantier = ?, date_debut = ?, enedis = ?, consuel = ?,
             type_client = ?, observations = ?,
-            acompte_1_montant = ?, acompte_1_date = ?, acompte_2_montant = ?, acompte_2_date = ?, solde_montant = ?, solde_date = ?
+            acompte_1_montant = ?, acompte_1_date = ?, acompte_2_montant = ?, acompte_2_date = ?, solde_montant = ?, solde_date = ?,
+            dp_valide = ?, commande_passee = ?, pose_programmee = ?
         WHERE id = ?
     `;
     
@@ -301,6 +321,7 @@ app.put('/api/clients/:id', requireAuth, (req, res) => {
         data.statut_chantier, data.date_debut, data.enedis, data.consuel,
         data.type_client, data.observations,
         data.acompte_1_montant, data.acompte_1_date, data.acompte_2_montant, data.acompte_2_date, data.solde_montant, data.solde_date,
+        data.dp_valide || 0, data.commande_passee || 0, data.pose_programmee || 0,
         id
     ];
     
