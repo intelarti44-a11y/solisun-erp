@@ -397,7 +397,209 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        .client-link {
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .client-link:hover {
+            color: var(--primary-hover);
+            background: var(--gray-50);
+            border-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+        }
+
+        /* Style spécifique pour le lien client dans les tableaux */
+        table .client-link {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--gray-200);
+            background: #ffffff;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            font-size: 0.9rem;
+        }
+
+        /* --- KANBAN BOARD STYLES --- */
+        .kanban-board {
+            display: flex;
+            gap: 20px;
+            padding: 10px 0;
+            overflow-x: auto;
+            min-height: calc(100vh - 250px);
+            align-items: flex-start;
+        }
+
+        .kanban-column {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(243, 244, 246, 0.5);
+            backdrop-filter: blur(5px);
+            border-radius: 12px;
+            padding: 15px;
+            border: 1px solid var(--gray-200);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: calc(100vh - 250px);
+            overflow-y: auto;
+        }
+
+        .kanban-column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background: rgba(243, 244, 246, 0.9);
+            padding: 5px 0;
+        }
+
+        .kanban-column-header h3 {
+            font-size: 15px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-600);
+            margin: 0;
+        }
+
+        .column-count {
+            background: var(--gray-200);
+            color: var(--gray-600);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .kanban-card {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--gray-100);
+            cursor: move; /* Future-proofing for drag & drop or just visual */
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .kanban-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: var(--primary-light);
+        }
+
+        .kanban-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+            opacity: 0.6;
+        }
+
+        .card-client-name {
+            font-weight: 700;
+            font-size: 15px;
+            color: var(--gray-800);
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        .card-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .card-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .tag-info { background: #e0f2fe; color: #0369a1; }
+        .tag-success { background: #dcfce7; color: #15803d; }
+        .tag-warning { background: #fef9c3; color: #a16207; }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--gray-50);
+            padding-top: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-round {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--gray-200);
+            background: white;
+            color: var(--gray-500);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-round:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Mini indicators for Enedis/Consuel */
+        .tech-status-dots {
+            display: flex;
+            gap: 15px;
+            margin-top: 5px;
+        }
+        .tech-dot {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .status-circle {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        .circle-red { background: #ef4444; }
+        .circle-orange { background: #f59e0b; }
+        .circle-green { background: #10b981; }
+
+        /* Technical Modal Specifics */
+        .technical-modal {
+            max-width: 500px !important;
+        }
     </style>
+
 </head>
 <body>
 
@@ -420,6 +622,10 @@
                 <i class="fa-solid fa-file-signature"></i>
                 Clients signés
             </div>
+            <div class="nav-item" onclick="switchView('chantier')">
+                <i class="fa-solid fa-person-digging"></i>
+                Suivi de Chantier
+            </div>
             <div class="nav-item" onclick="openFacturation()">
                 <i class="fa-solid fa-money-check-dollar"></i>
                 Facturation & Acomptes
@@ -431,6 +637,10 @@
             <div class="nav-item" onclick="openSettings()">
                 <i class="fa-solid fa-gear"></i>
                 Paramètres
+            </div>
+            <div class="nav-item" onclick="switchView('calculator')">
+                <i class="fa-solid fa-calculator"></i>
+                <span>Calculateur</span>
             </div>
         </nav>
     </aside>
@@ -514,11 +724,13 @@
                 </div>
             </div>
 
-            <!-- NEW CLIENT FORM VIEW -->
             <div id="view-new-client" class="view-section">
                 <div class="card">
-                    <div class="card-header">
-                        <h2>Création d'un dossier client complet</h2>
+                    <div class="card-header" style="display: flex; align-items: center; gap: 20px; justify-content: flex-start;">
+                        <button class="btn btn-outline" onclick="goBack()" style="padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-color: var(--gray-300);">
+                            <i class="fa-solid fa-arrow-left"></i> Retour
+                        </button>
+                        <h2 style="margin: 0;">Gestion du dossier client</h2>
                     </div>
                     <div class="card-body">
                         
@@ -722,6 +934,17 @@
                                             <option value="Validé">Validé</option>
                                         </select>
                                     </div>
+                                    <div class="form-group full-width" style="display: flex; gap: 30px; margin-top: 10px; background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px dashed #e2e8f0;">
+                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
+                                            <input type="checkbox" name="dp_valide" value="1" style="width: 20px; height: 20px;"> DP Valide
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
+                                            <input type="checkbox" name="commande_passee" value="1" style="width: 20px; height: 20px;"> Commande passée
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 600;">
+                                            <input type="checkbox" name="pose_programmee" value="1" style="width: 20px; height: 20px;"> Pose programmée
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
 
@@ -737,7 +960,7 @@
                             </div>
 
                             <div class="form-actions">
-                                <button type="button" class="btn btn-outline" onclick="openDashboard()">Annuler</button>
+                                <button type="button" class="btn btn-outline" onclick="goBack()">Annuler</button>
                                 <button type="submit" class="btn btn-success"><i class="fa-solid fa-floppy-disk"></i> Enregistrer le dossier</button>
                             </div>
                         </form>
@@ -809,6 +1032,123 @@
                 </div>
             </div>
 
+            <div id="view-chantier" class="view-section">
+                <div class="card-header" style="margin-bottom: 20px; background: transparent; padding: 0; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 20px;">
+                        <button class="btn btn-outline" onclick="goBack()" style="padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-color: var(--gray-300);">
+                            <i class="fa-solid fa-arrow-left"></i> Retour
+                        </button>
+                        <div>
+                            <h2 style="margin-bottom: 5px;">🔧 Suivi Technique & Chantier</h2>
+                            <p style="color: var(--text-muted); font-size: 14px;">Gestion des étapes d'installation et dossiers administratifs</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="kanban-board" id="kanbanBoard">
+                    <!-- Column 1: A Planifier -->
+                    <div class="kanban-column" id="col-planif">
+                        <div class="kanban-column-header">
+                            <h3>A Planifier</h3>
+                            <span class="column-count" id="count-planif">0</span>
+                        </div>
+                        <div class="kanban-cards-container" id="cards-planif"></div>
+                    </div>
+
+                    <!-- Column 2: En Chantier -->
+                    <div class="kanban-column" id="col-cours" style="border-top: 4px solid #f59e0b;">
+                        <div class="kanban-column-header">
+                            <h3>Chantier en cours</h3>
+                            <span class="column-count" id="count-cours">0</span>
+                        </div>
+                        <div class="kanban-cards-container" id="cards-cours"></div>
+                    </div>
+
+                    <!-- Column 3: Finalisation / Admin -->
+                    <div class="kanban-column" id="col-final" style="border-top: 4px solid #10b981;">
+                        <div class="kanban-column-header">
+                            <h3>Finalisation & Admin</h3>
+                            <span class="column-count" id="count-final">0</span>
+                        </div>
+                        <div class="kanban-cards-container" id="cards-final"></div>
+                    </div>
+                </div>
+
+                <div id="loadingChantier" style="padding: 40px; text-align: center; color: var(--gray-500);">
+                    <i class="fa-solid fa-spinner fa-spin" style="font-size: 30px;"></i>
+                    <p style="margin-top: 15px;">Chargement du tableau de bord technique...</p>
+                </div>
+            </div>
+
+            <!-- TECHNICAL EDIT MODAL (Simplified) -->
+            <div id="modal-technical" class="view-section" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: center; justify-content: center;">
+                <div class="card technical-modal" style="width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+                    <div class="card-header" style="border-bottom: 1px solid var(--gray-200);">
+                        <h3>Mise à jour technique</h3>
+                        <button class="btn-round" onclick="closeTechnicalModal()"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="card-body">
+                        <form id="technicalForm">
+                            <input type="hidden" name="id" id="tech-client-id">
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px;">Client</label>
+                                <div id="tech-client-nom" style="padding: 10px; background: var(--gray-50); border-radius: 6px; font-weight: 700; color: var(--primary);"></div>
+                            </div>
+
+                            <div class="form-grid" style="grid-template-columns: 1fr;">
+                                <div class="form-group">
+                                    <label>Statut chantier</label>
+                                    <select name="statut_chantier" id="tech-statut-chantier">
+                                        <option value="En attente">En attente / À planifier</option>
+                                        <option value="En cours">En cours de travaux</option>
+                                        <option value="Terminé">Chantier terminé</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Date de début prévue</label>
+                                    <input type="date" name="date_debut" id="tech-date-debut">
+                                </div>
+                                <div class="form-group">
+                                    <label>Numéro de dossier Enedis</label>
+                                    <input type="text" name="enedis" id="tech-enedis" placeholder="N° PRM / CRAE">
+                                </div>
+                                <div class="form-group">
+                                    <label>Suivi Consuel / Prime EDF</label>
+                                    <select name="consuel" id="tech-consuel">
+                                        <option value="Non démarré">Non démarré</option>
+                                        <option value="Dossier envoyé">Dossier envoyé</option>
+                                        <option value="Validé">Validé</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="background: #f1f5f9; padding: 12px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                    <label style="font-weight: 600; font-size: 13px; display: block; margin-bottom: 10px; color: var(--gray-700);">Indicateurs d'avancement</label>
+                                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                                            <input type="checkbox" name="dp_valide" id="tech-dp-valide" value="1"> DP Valide
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                                            <input type="checkbox" name="commande_passee" id="tech-commande-passee" value="1"> Commande passée
+                                        </label>
+                                        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px;">
+                                            <input type="checkbox" name="pose_programmee" id="tech-pose-programmee" value="1"> Pose programmée
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>Observations techniques</label>
+                                    <textarea name="observations" id="tech-observations" rows="3" placeholder="Notes pour les installateurs..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--gray-100);">
+                                <button type="button" class="btn btn-outline" onclick="closeTechnicalModal()">Annuler</button>
+                                <button type="button" class="btn btn-primary" onclick="saveTechnicalInfo()">Enregistrer les modifications</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
             <!-- SETTINGS VIEW -->
             <div id="view-settings" class="view-section">
                 <div class="card" style="margin-bottom: 30px;">
@@ -861,21 +1201,24 @@
             <!-- FACTURATION VIEW -->
             <div id="view-facturation" class="view-section">
                 <div class="card">
-                     <div class="card-header">
-                        <h2>Suivi des Encaissements (Devis Signés)</h2>
+                     <div class="card-header" style="display: flex; align-items: center; gap: 20px; justify-content: flex-start;">
+                        <button class="btn btn-outline" onclick="goBack()" style="padding: 8px 12px; display: flex; align-items: center; gap: 8px; border-color: var(--gray-300);">
+                            <i class="fa-solid fa-arrow-left"></i> Retour
+                        </button>
+                        <h2 style="margin: 0;">Suivi des Encaissements (Devis Signés)</h2>
                     </div>
                     <div class="card-body" style="padding: 0; min-height: 300px; overflow-x: auto;">
                         <table id="facturationTable">
                             <thead>
                                 <tr>
-                                    <th>Client</th>
-                                    <th>Signature</th>
-                                    <th>Montant TTC</th>
-                                    <th>1er Acompte</th>
-                                    <th>2ème Acompte</th>
-                                    <th>Solde</th>
-                                    <th>Reste à Payer</th>
-                                    <th>Actions</th>
+                                    <th onclick="sortTable('nom')" style="cursor:pointer">Client <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th style="text-align: center; width: 120px;">États Tech</th>
+                                    <th onclick="sortTable('montant_devis')" style="cursor:pointer">Montant TTC <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('acompte_1_montant')" style="cursor:pointer">1er Acompte <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('acompte_2_montant')" style="cursor:pointer">2ème Acompte <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('solde_montant')" style="cursor:pointer">Solde <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th onclick="sortTable('reste')" style="cursor:pointer">Reste à Payer <i class="fa-solid fa-sort" style="font-size: 10px; opacity:0.5; margin-left: 5px;"></i></th>
+                                    <th style="width: 80px;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="facturationTableBody">
@@ -892,9 +1235,91 @@
                 </div>
             </div>
 
+            <!-- Vue: Calculateur Solaire -->
+            <div id="view-calculator" class="view-section">
+                <style>
+                    #solisun-calculator {
+                        font-family: 'Inter', sans-serif;
+                        max-width: 600px;
+                        margin: 20px auto;
+                        padding: 30px;
+                        background: #0d1b2a;
+                        border: 1px solid rgba(0, 188, 212, 0.3);
+                        border-radius: 20px;
+                        color: #fff;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                    }
+                    #solisun-calculator h3 { color: #00bcd4; margin-bottom: 10px; }
+                    .calc-input-group { margin-bottom: 25px; }
+                    .calc-slider { width: 100%; margin: 15px 0; }
+                    .calc-results { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 20px; }
+                    .calc-card { background: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; text-align: center; }
+                    .calc-card.highlight { background: rgba(0, 188, 212, 0.1); border: 1px solid #00bcd4; }
+                </style>
+                <div id="solisun-calculator">
+                    <div class="calculator-header">
+                        <h3>Simulateur d'Économies</h3>
+                        <p>Estimez votre production et vos économies annuelles.</p>
+                    </div>
+                    <div class="calculator-body">
+                        <div class="calc-input-group">
+                            <label>Surface de toiture : <span id="surface-val" style="color:#ff9800; font-weight:bold;">30</span> m²</label>
+                            <input type="range" id="surface-slider" min="10" max="100" value="30" step="5" class="calc-slider">
+                        </div>
+                        <div class="calc-input-group">
+                            <label>Exposition :</label>
+                            <select id="exposition" style="width:100%; padding:10px; border-radius:8px; background:#1b263b; color:white; border:1px solid #415a77;">
+                                <option value="1.0">Plein Sud (Optimal)</option>
+                                <option value="0.85">Est / Ouest</option>
+                                <option value="0.6">Sud-Est / Sud-Ouest</option>
+                            </select>
+                        </div>
+                        <div class="calc-results">
+                            <div class="calc-card">
+                                <small>Production</small>
+                                <div id="prod-val">4500</div>
+                                <small>kWh/an</small>
+                            </div>
+                            <div class="calc-card highlight">
+                                <small>Économies</small>
+                                <div id="eco-val">1035</div>
+                                <small>€/an</small>
+                            </div>
+                            <div class="calc-card">
+                                <small>CO2 évité</small>
+                                <div id="co2-val">180</div>
+                                <small>kg/an</small>
+                            </div>
+                        </div>
+                    </div>
+                    <script>
+                        (function() {
+                            const slider = document.getElementById('surface-slider');
+                            const surfaceVal = document.getElementById('surface-val');
+                            const expoSelect = document.getElementById('exposition');
+                            const prodDisplay = document.getElementById('prod-val');
+                            const ecoDisplay = document.getElementById('eco-val');
+                            const co2Display = document.getElementById('co2-val');
+
+                            function update() {
+                                const s = parseInt(slider.value);
+                                const e = parseFloat(expoSelect.value);
+                                surfaceVal.innerText = s;
+                                const prod = Math.round(s * 150 * e);
+                                prodDisplay.innerText = prod.toLocaleString();
+                                ecoDisplay.innerText = Math.round(prod * 0.23).toLocaleString();
+                                co2Display.innerText = Math.round(prod * 0.04).toLocaleString();
+                            }
+                            slider.oninput = update;
+                            expoSelect.onchange = update;
+                            update();
+                        })();
+                    </script>
+                </div>
+            </div>
+
         </div>
     </main>
-
     <script src="app.js"></script>
 </body>
 </html>
