@@ -11,6 +11,8 @@ let allClientsData = [];
 let allCommerciaux = [];
 let allInstallations = [];
 let currentEditId = null;
+let currentView = 'dashboard';
+let lastView = 'dashboard';
 
 const titles = {
     'dashboard': 'Tableau de bord',
@@ -18,7 +20,9 @@ const titles = {
     'clients-list': 'Liste des clients',
     'clients-signed': 'Clients signés',
     'settings': 'Paramètres',
-    'facturation': 'Facturation & Acomptes'
+    'facturation': 'Facturation & Acomptes',
+    'chantier': 'Suivi de Chantier',
+    'calculator': 'Simulateur Solaire'
 };
 
 function openDashboard() {
@@ -190,7 +194,11 @@ function editClient(id) {
         Object.keys(client).forEach(key => {
             const el = formObj.elements[key];
             if (el) {
-                el.value = client[key] !== null ? client[key] : '';
+                if (el.type === 'checkbox') {
+                    el.checked = !!client[key];
+                } else {
+                    el.value = client[key] !== null ? client[key] : '';
+                }
             }
         });
     }
@@ -198,6 +206,11 @@ function editClient(id) {
 }
 
 function switchView(viewName) {
+    if (viewName !== currentView) {
+        lastView = currentView;
+        currentView = viewName;
+    }
+
     document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
 
@@ -213,10 +226,14 @@ function switchView(viewName) {
     });
 
     document.getElementById('page-title').innerText = titles[viewName] || 'Logiciel';
-
-    if (viewName === 'dashboard' || viewName === 'clients-list' || viewName === 'clients-signed' || viewName === 'facturation') {
+ 
+    if (viewName === 'dashboard' || viewName === 'clients-list' || viewName === 'clients-signed' || viewName === 'facturation' || viewName === 'chantier') {
         fetchClients();
     }
+}
+
+function goBack() {
+    switchView(lastView);
 }
 
 function getBadgeClass(status) {
@@ -238,25 +255,40 @@ function sortTable(column) {
         currentSortColumn = column;
         currentSortDirection = 1;
     }
+    applySort();
+}
+
+function applySort() {
+    if (!currentSortColumn) return;
 
     allClientsData.sort((a, b) => {
-        let valA = a[column] || '';
-        let valB = b[column] || '';
-
-        if (column === 'montant_devis') {
-            valA = parseFloat(valA) || 0;
-            valB = parseFloat(valB) || 0;
+        let valA, valB;
+ 
+        const numericColumns = ['montant_devis', 'acompte_1_montant', 'acompte_2_montant', 'solde_montant'];
+        const dateColumns = ['date_rdv', 'date_contact', 'date_signature', 'date_debut'];
+        
+        if (currentSortColumn === 'reste') {
+            valA = (a.montant_devis || 0) - (a.acompte_1_montant || 0) - (a.acompte_2_montant || 0) - (a.solde_montant || 0);
+            valB = (b.montant_devis || 0) - (b.acompte_1_montant || 0) - (b.acompte_2_montant || 0) - (b.solde_montant || 0);
+        } else if (numericColumns.includes(currentSortColumn)) {
+            valA = parseFloat(a[currentSortColumn]) || 0;
+            valB = parseFloat(b[currentSortColumn]) || 0;
+        } else if (dateColumns.includes(currentSortColumn)) {
+            valA = a[currentSortColumn] || '0000-00-00';
+            valB = b[currentSortColumn] || '0000-00-00';
         } else {
-            valA = valA.toString().toLowerCase();
-            valB = valB.toString().toLowerCase();
+            valA = (a[currentSortColumn] || '').toString().toLowerCase();
+            valB = (b[currentSortColumn] || '').toString().toLowerCase();
         }
-
+ 
         if (valA < valB) return -1 * currentSortDirection;
         if (valA > valB) return 1 * currentSortDirection;
         return 0;
     });
-
+ 
     renderFullClientsTable();
+    renderFacturationTable();
+    renderChantierTable();
 }
 
 function renderFullClientsTable() {
@@ -274,9 +306,9 @@ function renderFullClientsTable() {
             const tr = document.createElement('tr');
             const proj = c.type_installation || 'Non défini';
             const montant = c.montant_devis ? formatCurrency(c.montant_devis) : '-';
-
+ 
             tr.innerHTML = `
-                <td><strong>${c.nom}</strong><br><small>${c.ville || ''} ${c.code_postal ? '(' + c.code_postal + ')' : ''}</small></td>
+                <td><strong class="client-link" onclick="editClient(${c.id})">${c.nom}</strong><br><small>${c.ville || ''} ${c.code_postal ? '(' + c.code_postal + ')' : ''}</small></td>
                 <td>${c.telephone || '-'}</td>
                 <td>${proj}</td>
                 <td><span class="${getBadgeClass(c.statut_commercial)}">${c.statut_commercial || 'À contacter'}</span></td>
@@ -289,7 +321,7 @@ function renderFullClientsTable() {
             tableBody.appendChild(tr);
         });
     }
-
+ 
     if (signedTableBody) {
         const signedClientsList = clients.filter(c => c.statut_commercial && c.statut_commercial.includes('Signé'));
         if (signedClientsList.length === 0) {
@@ -299,9 +331,9 @@ function renderFullClientsTable() {
                 const tr = document.createElement('tr');
                 const proj = c.type_installation || 'Non défini';
                 const montant = c.montant_devis ? formatCurrency(c.montant_devis) : '-';
-
+ 
                 tr.innerHTML = `
-                    <td><strong>${c.nom}</strong><br><small>${c.ville || ''} ${c.code_postal ? '(' + c.code_postal + ')' : ''}</small></td>
+                    <td><strong class="client-link" onclick="editClient(${c.id})">${c.nom}</strong><br><small>${c.ville || ''} ${c.code_postal ? '(' + c.code_postal + ')' : ''}</small></td>
                     <td>${c.telephone || '-'}</td>
                     <td>${proj}</td>
                     <td>${montant}</td>
@@ -312,6 +344,249 @@ function renderFullClientsTable() {
                 `;
                 signedTableBody.appendChild(tr);
             });
+        }
+    }
+}
+ 
+function renderChantierBoard() {
+    const kanbanBoard = document.getElementById('kanbanBoard');
+    const loadingChantier = document.getElementById('loadingChantier');
+    if (!kanbanBoard) return;
+
+    if (loadingChantier) loadingChantier.style.display = 'none';
+
+    // Clear containers
+    const containers = {
+        'planif': document.getElementById('cards-planif'),
+        'cours': document.getElementById('cards-cours'),
+        'final': document.getElementById('cards-final')
+    };
+    
+    Object.values(containers).forEach(c => c.innerHTML = '');
+    
+    // Reset counts
+    const counts = { 'planif': 0, 'cours': 0, 'final': 0 };
+
+    const technicalClients = allClientsData.filter(c => 
+        (c.statut_commercial && c.statut_commercial.includes('Signé')) || 
+        (c.statut_chantier && c.statut_chantier !== 'En attente')
+    );
+
+    technicalClients.forEach(c => {
+        let colKey = 'planif';
+        if (c.statut_chantier === 'En cours') colKey = 'cours';
+        if (c.statut_chantier === 'Terminé') colKey = 'final';
+        
+        counts[colKey]++;
+        
+        const card = document.createElement('div');
+        card.className = 'kanban-card';
+        
+        const debutStr = c.date_debut ? new Date(c.date_debut).toLocaleDateString('fr-FR') : 'Non planifié';
+        
+        // Technical Status Dot Colors
+        const getTechColor = (val) => {
+            if (!val || val === 'Non démarré') return 'circle-red';
+            if (val === 'Dossier envoyé') return 'circle-orange';
+            return 'circle-green';
+        };
+
+        const enedisColor = c.enedis ? 'circle-green' : 'circle-red';
+        const consuelColor = getTechColor(c.consuel);
+
+        card.innerHTML = `
+            <div class="card-client-name">${c.nom}</div>
+            <div class="card-tags">
+                <span class="card-tag tag-info"><i class="fa-solid fa-solar-panel"></i> ${c.type_installation || '-'}</span>
+                ${c.batterie === 'Oui' ? '<span class="card-tag tag-warning"><i class="fa-solid fa-battery-full"></i> Batterie</span>' : ''}
+            </div>
+            
+            <div class="tech-status-dots">
+                <div class="tech-dot" title="Dossier Enedis : ${c.enedis || 'Non renseigné'}">
+                    <div class="status-circle ${enedisColor}"></div> Enedis
+                </div>
+                <div class="tech-dot" title="Consuel : ${c.consuel || 'Non démarré'}">
+                    <div class="status-circle ${consuelColor}"></div> Consuel
+                </div>
+            </div>
+
+            <div class="tech-indicators-mini" style="margin-top: 10px; display: flex; gap: 6px; padding: 8px; background: rgba(255,255,255,0.5); border-radius: 6px;">
+                <div style="display: flex; align-items: center; gap: 4px; font-size: 11px;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: ${c.dp_valide ? '#22c55e' : '#e2e8f0'};"></span> DP
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px; font-size: 11px;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: ${c.commande_passee ? '#3b82f6' : '#e2e8f0'};"></span> CMD
+                </div>
+                <div style="display: flex; align-items: center; gap: 4px; font-size: 11px;">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: ${c.pose_programmee ? '#a855f7' : '#e2e8f0'};"></span> POS
+                </div>
+            </div>
+
+            <div class="card-footer">
+                <div><i class="fa-solid fa-calendar-day"></i> ${debutStr}</div>
+                <div class="card-actions">
+                    <button class="btn-round" onclick="openTechnicalModal(${c.id})" title="Mise à jour technique"><i class="fa-solid fa-wrench"></i></button>
+                    <button class="btn-round" onclick="editClient(${c.id})" title="Fiche complète"><i class="fa-solid fa-eye"></i></button>
+                </div>
+            </div>
+        `;
+        containers[colKey].appendChild(card);
+    });
+
+    // Update count badges
+    document.getElementById('count-planif').innerText = counts['planif'];
+    document.getElementById('count-cours').innerText = counts['cours'];
+    document.getElementById('count-final').innerText = counts['final'];
+}
+
+function renderChantierTable() {
+    renderChantierBoard(); // Redirection to new Kanban board
+}
+
+function openTechnicalModal(id) {
+    const client = allClientsData.find(c => c.id === id);
+    if (!client) return;
+
+    document.getElementById('tech-client-id').value = id;
+    document.getElementById('tech-client-nom').innerText = client.nom;
+    document.getElementById('tech-statut-chantier').value = client.statut_chantier || 'En attente';
+    document.getElementById('tech-date-debut').value = client.date_debut || '';
+    document.getElementById('tech-enedis').value = client.enedis || '';
+    document.getElementById('tech-consuel').value = client.consuel || 'Non démarré';
+    document.getElementById('tech-observations').value = client.observations || '';
+
+    // Indicators
+    document.getElementById('tech-dp-valide').checked = !!client.dp_valide;
+    document.getElementById('tech-commande-passee').checked = !!client.commande_passee;
+    document.getElementById('tech-pose-programmee').checked = !!client.pose_programmee;
+
+    document.getElementById('modal-technical').style.display = 'flex';
+}
+
+function closeTechnicalModal() {
+    document.getElementById('modal-technical').style.display = 'none';
+}
+
+async function saveTechnicalInfo() {
+    const id = document.getElementById('tech-client-id').value;
+    const client = allClientsData.find(c => c.id == id);
+    if (!client) return;
+
+    // Get values from simplified form
+    const form = document.getElementById('technicalForm');
+    const formData = new FormData(form);
+    const updates = Object.fromEntries(formData.entries());
+
+    // Explicitly handle checkboxes (FormData only includes them if checked)
+    updates.dp_valide = document.getElementById('tech-dp-valide').checked ? 1 : 0;
+    updates.commande_passee = document.getElementById('tech-commande-passee').checked ? 1 : 0;
+    updates.pose_programmee = document.getElementById('tech-pose-programmee').checked ? 1 : 0;
+
+    // Merge with existing client data to avoid overwriting everything else
+    const payload = { ...client, ...updates };
+    
+    try {
+        const res = await fetch(`${API_URL}/clients/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            closeTechnicalModal();
+            fetchClients(); // Refresh data and board
+        } else {
+            alert("Erreur lors de la mise à jour technique");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Erreur réseau");
+    }
+}
+
+
+function renderFacturationTable() {
+    const facturationBody = document.getElementById('facturationTableBody');
+    const loadingFact = document.getElementById('loadingFacturation');
+    if (!facturationBody) return;
+
+    if (loadingFact) loadingFact.style.display = 'none';
+    facturationBody.innerHTML = '';
+
+    const signedClients = allClientsData.filter(c => c.statut_commercial && c.statut_commercial.includes('Signé'));
+    if (signedClients.length === 0) {
+        facturationBody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 30px;">Aucun devis signé trouvé.</td></tr>';
+    } else {
+        let totalDevis = 0, totalA1 = 0, totalA2 = 0, totalSolde = 0, totalReste = 0;
+
+        signedClients.forEach(c => {
+            const tr = document.createElement('tr');
+            const a1 = c.acompte_1_montant || 0;
+            const a2 = c.acompte_2_montant || 0;
+            const s = c.solde_montant || 0;
+            const devis = c.montant_devis || 0;
+            const reste = devis - a1 - a2 - s;
+
+            const d_a1 = c.acompte_1_date ? `<br><small class="badge badge-success" style="font-size:10px;">Le ${new Date(c.acompte_1_date).toLocaleDateString('fr-FR')}</small>` : '';
+            const d_a2 = c.acompte_2_date ? `<br><small class="badge badge-success" style="font-size:10px;">Le ${new Date(c.acompte_2_date).toLocaleDateString('fr-FR')}</small>` : '';
+            const d_s = c.solde_date ? `<br><small class="badge badge-success" style="font-size:10px;">Le ${new Date(c.solde_date).toLocaleDateString('fr-FR')}</small>` : '';
+            
+            // Indicators rendering
+            const dotStyle = "width: 12px; height: 12px; border-radius: 50%; display: inline-block; margin: 0 4px;";
+            const dpDot = `<span title="DP Validée" style="${dotStyle} background-color: ${c.dp_valide ? '#22c55e' : '#e2e8f0'};"></span>`;
+            const cmdDot = `<span title="Commande Passée" style="${dotStyle} background-color: ${c.commande_passee ? '#3b82f6' : '#e2e8f0'};"></span>`;
+            const poseDot = `<span title="Pose Programmée" style="${dotStyle} background-color: ${c.pose_programmee ? '#a855f7' : '#e2e8f0'};"></span>`;
+
+            const resteColor = reste <= 0 ? (reste < 0 ? '#ef4444' : '#22c55e') : '#f97316';
+            const resteLabel = reste <= 0 ? (reste < 0 ? '⚠️ ' : '✅ ') : '';
+
+            tr.innerHTML = `
+                <td><strong class="client-link" onclick="editClient(${c.id})">${c.nom}</strong></td>
+                <td style="text-align: center;">
+                    <div style="display: flex; justify-content: center; gap: 4px;">
+                        ${dpDot}${cmdDot}${poseDot}
+                    </div>
+                    <div style="font-size: 8px; color: var(--gray-400); margin-top: 4px; display: flex; justify-content: space-around;">
+                        <span>DP</span><span>CMD</span><span>POS</span>
+                    </div>
+                </td>
+                <td><strong>${formatCurrency(devis)}</strong></td>
+                <td>${a1 > 0 ? (formatCurrency(a1) + d_a1) : '-'}</td>
+                <td>${a2 > 0 ? (formatCurrency(a2) + d_a2) : '-'}</td>
+                <td>${s > 0 ? (formatCurrency(s) + d_s) : '-'}</td>
+                <td><strong style="color:${resteColor};">${resteLabel}${formatCurrency(reste)}</strong></td>
+                <td class="action-btns">
+                    <button class="btn-round" onclick="openTechnicalModal(${c.id})" title="Mise à jour technique"><i class="fa-solid fa-wrench"></i></button>
+                </td>
+            `;
+            facturationBody.appendChild(tr);
+
+            totalDevis += devis;
+            totalA1 += a1;
+            totalA2 += a2;
+            totalSolde += s;
+            totalReste += reste;
+        });
+
+        const tfoot = document.getElementById('facturationTableFoot');
+        if (tfoot) {
+            const totalResteColor = totalReste <= 0 ? (totalReste < 0 ? '#ef4444' : '#22c55e') : '#f97316';
+            tfoot.innerHTML = `
+                <tr style="border-top: 2px solid var(--gray-300); font-size: 0.95rem;">
+                    <td colspan="2" style="text-align:right; text-transform:uppercase; padding:12px 16px; color:var(--gray-600);">TOTAL :</td>
+                    <td style="padding:12px 16px; font-weight:700;">${formatCurrency(totalDevis)}</td>
+                    <td style="padding:12px 16px; color:#3b82f6; font-weight:600;">${formatCurrency(totalA1)}</td>
+                    <td style="padding:12px 16px; color:#3b82f6; font-weight:600;">${formatCurrency(totalA2)}</td>
+                    <td style="padding:12px 16px; color:#8b5cf6; font-weight:600;">${formatCurrency(totalSolde)}</td>
+                    <td style="padding:12px 16px; color:${totalResteColor}; font-weight:700; font-size:1rem;">${formatCurrency(totalReste)}</td>
+                    <td></td>
+                </tr>
+                <tr style="background:#f0fdf4; border-top:1px solid #bbf7d0;">
+                    <td colspan="3" style="padding:10px 16px; color:var(--gray-500); font-size:0.82rem;">💡 Reste à payer = Montant TTC − Acompte 1 − Acompte 2 − Solde reçu</td>
+                    <td colspan="2" style="padding:10px 16px; color:#3b82f6; font-size:0.85rem;">Total encaissé : <strong>${formatCurrency(totalA1 + totalA2 + totalSolde)}</strong></td>
+                    <td colspan="2" style="padding:10px 16px; color:${totalResteColor}; font-size:0.85rem;">À recevoir : <strong>${formatCurrency(Math.max(0, totalReste))}</strong></td>
+                </tr>
+            `;
         }
     }
 }
@@ -328,8 +603,9 @@ async function fetchClients() {
 
         if (!currentSortColumn) {
             renderFullClientsTable();
+            renderFacturationTable();
         } else {
-            sortTable(currentSortColumn);
+            applySort();
         }
 
         // Dashboard : derniers clients
@@ -343,7 +619,7 @@ async function fetchClients() {
                 latestClients.forEach(c => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                        <td><strong>${c.nom}</strong><br><small>${c.ville || ''}</small></td>
+                        <td><strong class="client-link" onclick="editClient(${c.id})">${c.nom}</strong><br><small>${c.ville || ''}</small></td>
                         <td>${c.date_rdv ? new Date(c.date_rdv).toLocaleDateString('fr-FR') : '-'}</td>
                         <td>${c.type_installation || '-'}</td>
                         <td><span class="${getBadgeClass(c.statut_commercial)}">${c.statut_commercial || '-'}</span></td>
@@ -356,79 +632,10 @@ async function fetchClients() {
                 });
             }
         }
-
-        // Facturation
-        const facturationBody = document.getElementById('facturationTableBody');
-        const loadingFact = document.getElementById('loadingFacturation');
-        if (facturationBody && loadingFact) {
-            loadingFact.style.display = 'none';
-            facturationBody.innerHTML = '';
-
-            const signedClients = clients.filter(c => c.statut_commercial && c.statut_commercial.includes('Signé'));
-            if (signedClients.length === 0) {
-                facturationBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Aucun devis signé trouvé.</td></tr>';
-            } else {
-                let totalDevis = 0, totalA1 = 0, totalA2 = 0, totalSolde = 0, totalReste = 0;
-
-                signedClients.forEach(c => {
-                    const tr = document.createElement('tr');
-                    const a1 = c.acompte_1_montant || 0;
-                    const a2 = c.acompte_2_montant || 0;
-                    const s = c.solde_montant || 0;
-                    const devis = c.montant_devis || 0;
-                    const reste = devis - a1 - a2 - s;
-
-                    const d_a1 = c.acompte_1_date ? `<br><small class="badge badge-success" style="font-size:10px;">Le ${new Date(c.acompte_1_date).toLocaleDateString('fr-FR')}</small>` : '';
-                    const d_a2 = c.acompte_2_date ? `<br><small class="badge badge-success" style="font-size:10px;">Le ${new Date(c.acompte_2_date).toLocaleDateString('fr-FR')}</small>` : '';
-                    const d_s = c.solde_date ? `<br><small class="badge badge-success" style="font-size:10px;">Le ${new Date(c.solde_date).toLocaleDateString('fr-FR')}</small>` : '';
-                    const sig = c.date_signature ? new Date(c.date_signature).toLocaleDateString('fr-FR') : '-';
-
-                    const resteColor = reste <= 0 ? (reste < 0 ? '#ef4444' : '#22c55e') : '#f97316';
-                    const resteLabel = reste <= 0 ? (reste < 0 ? '⚠️ ' : '✅ ') : '';
-
-                    tr.innerHTML = `
-                        <td><strong>${c.nom}</strong></td>
-                        <td>${sig}</td>
-                        <td><strong>${formatCurrency(devis)}</strong></td>
-                        <td>${a1 > 0 ? (formatCurrency(a1) + d_a1) : '-'}</td>
-                        <td>${a2 > 0 ? (formatCurrency(a2) + d_a2) : '-'}</td>
-                        <td>${s > 0 ? (formatCurrency(s) + d_s) : '-'}</td>
-                        <td><strong style="color:${resteColor};">${resteLabel}${formatCurrency(reste)}</strong></td>
-                        <td class="action-btns">
-                            <button class="icon-btn" onclick="editClient(${c.id})" title="Saisir paiements"><i class="fa-solid fa-pen-to-square"></i></button>
-                        </td>
-                    `;
-                    facturationBody.appendChild(tr);
-
-                    totalDevis += devis;
-                    totalA1 += a1;
-                    totalA2 += a2;
-                    totalSolde += s;
-                    totalReste += reste;
-                });
-
-                const tfoot = document.getElementById('facturationTableFoot');
-                if (tfoot) {
-                    const totalResteColor = totalReste <= 0 ? (totalReste < 0 ? '#ef4444' : '#22c55e') : '#f97316';
-                    tfoot.innerHTML = `
-                        <tr style="border-top: 2px solid var(--gray-300); font-size: 0.95rem;">
-                            <td colspan="2" style="text-align:right; text-transform:uppercase; padding:12px 16px; color:var(--gray-600);">TOTAL :</td>
-                            <td style="padding:12px 16px; font-weight:700;">${formatCurrency(totalDevis)}</td>
-                            <td style="padding:12px 16px; color:#3b82f6; font-weight:600;">${formatCurrency(totalA1)}</td>
-                            <td style="padding:12px 16px; color:#3b82f6; font-weight:600;">${formatCurrency(totalA2)}</td>
-                            <td style="padding:12px 16px; color:#8b5cf6; font-weight:600;">${formatCurrency(totalSolde)}</td>
-                            <td style="padding:12px 16px; color:${totalResteColor}; font-weight:700; font-size:1rem;">${formatCurrency(totalReste)}</td>
-                            <td></td>
-                        </tr>
-                        <tr style="background:#f0fdf4; border-top:1px solid #bbf7d0;">
-                            <td colspan="3" style="padding:10px 16px; color:var(--gray-500); font-size:0.82rem;">💡 Reste à payer = Montant TTC − Acompte 1 − Acompte 2 − Solde reçu</td>
-                            <td colspan="2" style="padding:10px 16px; color:#3b82f6; font-size:0.85rem;">Total encaissé : <strong>${formatCurrency(totalA1 + totalA2 + totalSolde)}</strong></td>
-                            <td colspan="2" style="padding:10px 16px; color:${totalResteColor}; font-size:0.85rem;">À recevoir : <strong>${formatCurrency(Math.max(0, totalReste))}</strong></td>
-                        </tr>
-                    `;
-                }
-            }
-        }
+ 
+        // Facturation & Chantier
+        renderFacturationTable();
+        renderChantierTable();
 
         // Compteurs dashboard
         document.getElementById('stat-total-clients').innerText = clients.length;
@@ -455,6 +662,11 @@ async function submitForm(e) {
     const formObj = document.getElementById('clientForm');
     const formData = new FormData(formObj);
     const payload = Object.fromEntries(formData.entries());
+
+    // Explicitly handle indicator checkboxes (FormData omits them if unchecked)
+    payload.dp_valide = formObj.elements['dp_valide'].checked ? 1 : 0;
+    payload.commande_passee = formObj.elements['commande_passee'].checked ? 1 : 0;
+    payload.pose_programmee = formObj.elements['pose_programmee'].checked ? 1 : 0;
 
     const method = currentEditId ? 'PUT' : 'POST';
     const url = currentEditId ? `${API_URL}/clients/${currentEditId}` : `${API_URL}/clients`;
