@@ -3,9 +3,11 @@ const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
+const fs = require('fs'); // Déplacé ici pour corriger l'erreur
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+// On récupère le port fourni par Alwaysdata, ou 3000 par défaut (pour tes tests en local)
+const PORT = process.env.PORT || 3000;
 
 // Identifiants (modifiables via variables d'environnement sur Railway)
 const LOGIN_USER     = process.env.LOGIN_USER     || 'admin';
@@ -121,7 +123,6 @@ function formatPhone(raw) {
 }
 
 // Database setup — Volume persistant Railway
-const fs = require('fs');
 const DATA_DIR  = process.env.RAILWAY_VOLUME_MOUNT_PATH || path.join(__dirname, 'data');
 const dbPath    = path.join(DATA_DIR, 'database.sqlite');
 const seedPath  = path.join(__dirname, 'database.sqlite'); // fichier initial (GitHub)
@@ -277,13 +278,13 @@ app.post('/api/clients', requireAuth, (req, res) => {
     `;
     
     const params = [
-        data.nom, formatPhone(data.telephone), data.email, data.adresse, data.code_postal, data.ville,
-        data.date_contact, data.date_rdv, data.commercial, data.statut_commercial,
-        data.type_installation, data.batterie, data.type_toiture, data.commentaires,
-        data.prix_installation_ht, data.taux_tva, data.montant_devis, data.date_envoi_devis, data.date_signature, data.mode_paiement,
-        data.statut_chantier, data.date_debut, data.enedis, data.consuel,
-        data.type_client, data.observations,
-        data.acompte_1_montant, data.acompte_1_date, data.acompte_2_montant, data.acompte_2_date, data.solde_montant, data.solde_date,
+        data.nom || '', formatPhone(data.telephone) || '', data.email || '', data.adresse || '', data.code_postal || '', data.ville || '',
+        data.date_contact || '', data.date_rdv || '', data.commercial || '', data.statut_commercial || '',
+        data.type_installation || '', data.batterie || '', data.type_toiture || '', data.commentaires || '',
+        data.prix_installation_ht || 0, data.taux_tva || 0, data.montant_devis || 0, data.date_envoi_devis || '', data.date_signature || '', data.mode_paiement || '',
+        data.statut_chantier || '', data.date_debut || '', data.enedis || '', data.consuel || '',
+        data.type_client || 'Particulier', data.observations || '',
+        data.acompte_1_montant || 0, data.acompte_1_date || '', data.acompte_2_montant || 0, data.acompte_2_date || '', data.solde_montant || 0, data.solde_date || '',
         data.dp_valide || 0, data.commande_passee || 0, data.pose_programmee || 0
     ];
     
@@ -314,13 +315,13 @@ app.put('/api/clients/:id', requireAuth, (req, res) => {
     `;
     
     const params = [
-        data.nom, formatPhone(data.telephone), data.email, data.adresse, data.code_postal, data.ville,
-        data.date_contact, data.date_rdv, data.commercial, data.statut_commercial,
-        data.type_installation, data.batterie, data.type_toiture, data.commentaires,
-        data.prix_installation_ht, data.taux_tva, data.montant_devis, data.date_envoi_devis, data.date_signature, data.mode_paiement,
-        data.statut_chantier, data.date_debut, data.enedis, data.consuel,
-        data.type_client, data.observations,
-        data.acompte_1_montant, data.acompte_1_date, data.acompte_2_montant, data.acompte_2_date, data.solde_montant, data.solde_date,
+        data.nom || '', formatPhone(data.telephone) || '', data.email || '', data.adresse || '', data.code_postal || '', data.ville || '',
+        data.date_contact || '', data.date_rdv || '', data.commercial || '', data.statut_commercial || '',
+        data.type_installation || '', data.batterie || '', data.type_toiture || '', data.commentaires || '',
+        data.prix_installation_ht || 0, data.taux_tva || 0, data.montant_devis || 0, data.date_envoi_devis || '', data.date_signature || '', data.mode_paiement || '',
+        data.statut_chantier || '', data.date_debut || '', data.enedis || '', data.consuel || '',
+        data.type_client || 'Particulier', data.observations || '',
+        data.acompte_1_montant || 0, data.acompte_1_date || '', data.acompte_2_montant || 0, data.acompte_2_date || '', data.solde_montant || 0, data.solde_date || '',
         data.dp_valide || 0, data.commande_passee || 0, data.pose_programmee || 0,
         id
     ];
@@ -383,10 +384,7 @@ app.delete('/api/installations/:id', requireAuth, (req, res) => {
 });
 
 // Starts the Server
-app.listen(PORT, () => {
-    console.log('');
-    console.log('==============================================');
-    console.log(`🚀 Serveur SoliSun ERP démarré sur http://localhost:${PORT}`);
-    console.log('==============================================');
-    console.log('');
+const HOST = process.env.IP || '0.0.0.0';
+app.listen(PORT, HOST, () => {
+  console.log(`Solisun ERP V2 est en ligne sur le port ${PORT}`);
 });
