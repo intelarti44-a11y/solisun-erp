@@ -1,7 +1,7 @@
 {
-  "name": "solisun-erp",
-  "version": "1.0.0",
-  "description": "SoliSun ERP - Gestion clientèle solaire",
+  "name": "solisun-erp-v2",
+  "version": "2.0.0",
+  "description": "SoliSun ERP V2 - Gestion clientèle solaire",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
