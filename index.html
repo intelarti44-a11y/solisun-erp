@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SoliSun ERP - Gestion des Clients</title>
+    <title>SoliSun ERP V2 - Gestion des Clients</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -607,7 +607,7 @@
     <aside class="sidebar">
         <div class="logo-area">
             <i class="fa-solid fa-solar-panel logo-icon"></i>
-            <div class="logo-text">SoliSun ERP</div>
+            <div class="logo-text">SoliSun ERP V2</div>
         </div>
         <nav class="nav-menu">
             <div class="nav-item active" onclick="openDashboard()">
@@ -638,10 +638,7 @@
                 <i class="fa-solid fa-gear"></i>
                 Paramètres
             </div>
-            <div class="nav-item" onclick="switchView('calculator')">
-                <i class="fa-solid fa-calculator"></i>
-                <span>Calculateur</span>
-            </div>
+
         </nav>
     </aside>
 
@@ -734,7 +731,7 @@
                     </div>
                     <div class="card-body">
                         
-                        <form id="clientForm" onsubmit="event.preventDefault(); alert('Dossier enregistré avec succès !'); switchView('dashboard');">
+                        <form id="clientForm">
                             
                             <!-- 1. Fiche client -->
                             <div class="form-section">
@@ -1143,6 +1140,57 @@
                             <div class="form-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--gray-100);">
                                 <button type="button" class="btn btn-outline" onclick="closeTechnicalModal()">Annuler</button>
                                 <button type="button" class="btn btn-primary" onclick="saveTechnicalInfo()">Enregistrer les modifications</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACOMPTES EDIT MODAL -->
+            <div id="modal-acomptes" class="view-section" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; align-items: center; justify-content: center;">
+                <div class="card" style="width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto;">
+                    <div class="card-header" style="border-bottom: 1px solid var(--gray-200);">
+                        <h3>Modifier les acomptes</h3>
+                        <button class="btn-round" onclick="closeAcomptesModal()"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="card-body">
+                        <form id="acomptesForm">
+                            <input type="hidden" name="id" id="acompte-client-id">
+                            <div style="margin-bottom: 15px;">
+                                <label style="display: block; font-weight: 600; font-size: 13px; margin-bottom: 5px;">Client</label>
+                                <div id="acompte-client-nom" style="padding: 10px; background: var(--gray-50); border-radius: 6px; font-weight: 700; color: var(--primary);"></div>
+                            </div>
+
+                            <div class="form-grid" style="grid-template-columns: 1fr;">
+                                <div class="form-group">
+                                    <label>1er Acompte - Montant (€)</label>
+                                    <input type="number" step="0.01" name="acompte_1_montant" id="acompte-1-montant">
+                                </div>
+                                <div class="form-group">
+                                    <label>1er Acompte - Date</label>
+                                    <input type="date" name="acompte_1_date" id="acompte-1-date">
+                                </div>
+                                <div class="form-group">
+                                    <label>2ème Acompte - Montant (€)</label>
+                                    <input type="number" step="0.01" name="acompte_2_montant" id="acompte-2-montant">
+                                </div>
+                                <div class="form-group">
+                                    <label>2ème Acompte - Date</label>
+                                    <input type="date" name="acompte_2_date" id="acompte-2-date">
+                                </div>
+                                <div class="form-group">
+                                    <label>Solde - Montant (€)</label>
+                                    <input type="number" step="0.01" name="solde_montant" id="acompte-solde-montant">
+                                </div>
+                                <div class="form-group">
+                                    <label>Solde - Date</label>
+                                    <input type="date" name="solde_date" id="acompte-solde-date">
+                                </div>
+                            </div>
+                            
+                            <div class="form-actions" style="margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--gray-100);">
+                                <button type="button" class="btn btn-outline" onclick="closeAcomptesModal()">Annuler</button>
+                                <button type="button" class="btn btn-primary" onclick="saveAcomptesInfo()">Enregistrer les acomptes</button>
                             </div>
                         </form>
                     </div>
