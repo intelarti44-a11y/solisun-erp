@@ -504,6 +504,61 @@ async function saveTechnicalInfo() {
     }
 }
 
+function openAcomptesModal(id) {
+    const client = allClientsData.find(c => c.id === id);
+    if (!client) return;
+
+    document.getElementById('acompte-client-id').value = id;
+    document.getElementById('acompte-client-nom').innerText = client.nom;
+    
+    document.getElementById('acompte-1-montant').value = client.acompte_1_montant || '';
+    document.getElementById('acompte-1-date').value = client.acompte_1_date || '';
+    document.getElementById('acompte-2-montant').value = client.acompte_2_montant || '';
+    document.getElementById('acompte-2-date').value = client.acompte_2_date || '';
+    document.getElementById('acompte-solde-montant').value = client.solde_montant || '';
+    document.getElementById('acompte-solde-date').value = client.solde_date || '';
+
+    document.getElementById('modal-acomptes').style.display = 'flex';
+}
+
+function closeAcomptesModal() {
+    document.getElementById('modal-acomptes').style.display = 'none';
+}
+
+async function saveAcomptesInfo() {
+    const id = document.getElementById('acompte-client-id').value;
+    const client = allClientsData.find(c => c.id == id);
+    if (!client) return;
+
+    const updates = {
+        acompte_1_montant: document.getElementById('acompte-1-montant').value ? parseFloat(document.getElementById('acompte-1-montant').value) : null,
+        acompte_1_date: document.getElementById('acompte-1-date').value || null,
+        acompte_2_montant: document.getElementById('acompte-2-montant').value ? parseFloat(document.getElementById('acompte-2-montant').value) : null,
+        acompte_2_date: document.getElementById('acompte-2-date').value || null,
+        solde_montant: document.getElementById('acompte-solde-montant').value ? parseFloat(document.getElementById('acompte-solde-montant').value) : null,
+        solde_date: document.getElementById('acompte-solde-date').value || null
+    };
+
+    const payload = { ...client, ...updates };
+    
+    try {
+        const res = await fetch(`${API_URL}/clients/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (res.ok) {
+            closeAcomptesModal();
+            fetchClients(); // Refresh data
+        } else {
+            alert("Erreur lors de la mise à jour des acomptes");
+        }
+    } catch (err) {
+        console.error(err);
+        alert("Erreur réseau");
+    }
+}
 
 function renderFacturationTable() {
     const facturationBody = document.getElementById('facturationTableBody');
@@ -551,9 +606,9 @@ function renderFacturationTable() {
                     </div>
                 </td>
                 <td><strong>${formatCurrency(devis)}</strong></td>
-                <td>${a1 > 0 ? (formatCurrency(a1) + d_a1) : '-'}</td>
-                <td>${a2 > 0 ? (formatCurrency(a2) + d_a2) : '-'}</td>
-                <td>${s > 0 ? (formatCurrency(s) + d_s) : '-'}</td>
+                <td onclick="openAcomptesModal(${c.id})" style="cursor:pointer; transition: 0.2s;" onmouseover="this.style.backgroundColor='var(--gray-100)'" onmouseout="this.style.backgroundColor='transparent'">${a1 > 0 ? (formatCurrency(a1) + d_a1) : '-'}</td>
+                <td onclick="openAcomptesModal(${c.id})" style="cursor:pointer; transition: 0.2s;" onmouseover="this.style.backgroundColor='var(--gray-100)'" onmouseout="this.style.backgroundColor='transparent'">${a2 > 0 ? (formatCurrency(a2) + d_a2) : '-'}</td>
+                <td onclick="openAcomptesModal(${c.id})" style="cursor:pointer; transition: 0.2s;" onmouseover="this.style.backgroundColor='var(--gray-100)'" onmouseout="this.style.backgroundColor='transparent'">${s > 0 ? (formatCurrency(s) + d_s) : '-'}</td>
                 <td><strong style="color:${resteColor};">${resteLabel}${formatCurrency(reste)}</strong></td>
                 <td class="action-btns">
                     <button class="btn-round" onclick="openTechnicalModal(${c.id})" title="Mise à jour technique"><i class="fa-solid fa-wrench"></i></button>
@@ -657,37 +712,56 @@ async function fetchClients() {
 }
 
 async function submitForm(e) {
+    console.log('🚀 Tentative d\'enregistrement du formulaire...');
     e.preventDefault();
 
     const formObj = document.getElementById('clientForm');
-    const formData = new FormData(formObj);
-    const payload = Object.fromEntries(formData.entries());
-
-    // Explicitly handle indicator checkboxes (FormData omits them if unchecked)
-    payload.dp_valide = formObj.elements['dp_valide'].checked ? 1 : 0;
-    payload.commande_passee = formObj.elements['commande_passee'].checked ? 1 : 0;
-    payload.pose_programmee = formObj.elements['pose_programmee'].checked ? 1 : 0;
-
-    const method = currentEditId ? 'PUT' : 'POST';
-    const url = currentEditId ? `${API_URL}/clients/${currentEditId}` : `${API_URL}/clients`;
+    const btn = formObj.querySelector('button[type="submit"]');
+    const originalBtnContent = btn.innerHTML;
 
     try {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Enregistrement...';
+
+        const formData = new FormData(formObj);
+        const payload = Object.fromEntries(formData.entries());
+
+        // Forcer les valeurs des checkboxes (non présentes dans FormData si non cochées)
+        payload.dp_valide = formObj.elements['dp_valide'].checked ? 1 : 0;
+        payload.commande_passee = formObj.elements['commande_passee'].checked ? 1 : 0;
+        payload.pose_programmee = formObj.elements['pose_programmee'].checked ? 1 : 0;
+
+        console.log('📦 Payload envoyé:', payload);
+
+        const method = currentEditId ? 'PUT' : 'POST';
+        const url = currentEditId ? `${API_URL}/clients/${currentEditId}` : `${API_URL}/clients`;
+
         const res = await fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
 
+        console.log('📡 Statut réponse:', res.status);
+
         if (res.ok) {
+            console.log('✅ Succès !');
             alert(currentEditId ? 'Dossier modifié avec succès !' : 'Dossier enregistré avec succès !');
             formObj.reset();
             currentEditId = null;
-            openDashboard();
+            switchView('dashboard');
+            fetchClients();
         } else {
-            alert("Erreur lors de l'enregistrement");
+            const errorData = await res.json();
+            console.error('❌ Erreur serveur:', errorData);
+            alert('Erreur lors de l\'enregistrement : ' + (errorData.error || 'Erreur inconnue'));
         }
     } catch (err) {
-        alert('Erreur réseau ou serveur inaccessible.');
+        console.error('🔥 Erreur réseau/JS:', err);
+        alert('Erreur réseau ou serveur inaccessible : ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalBtnContent;
     }
 }
 
